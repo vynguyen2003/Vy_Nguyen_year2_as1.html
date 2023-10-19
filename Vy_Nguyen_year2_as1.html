@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Nursing CheckList</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Don't use this in production: -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      table, td, th {
+            border: 2px solid black;
+            font-size: 20px;
+            padding: 3px;
+      }
+      table{
+        border-collapse: collapse;
+      }
+      td{
+        text-align: center;
+      }
+      @media screen and (max-width: 700px){
+        p{
+          font-size: 12px;
+        }
+        body{
+          font-size: 20px;
+          
+        }
+        thead{
+          background-color: rgb(0,150,0);
+        }
+        tr:nth-child(even){
+          background-color: #E2E5DE;
+        }
+        
+
+      }
+      thead{
+          background-color: rgb(0,150,0);
+      }
+      tr:nth-child(even){
+          background-color: #E2E5DE;
+      }
+      .submitButton{
+        background-color: #FFF59E;
+      }
+      
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      
+      function CheckList(props){
+
+        let [checklist, setChecklist] = React.useState(props.initialChecklist);
+        let [checklist_search, setChecklist_search] = React.useState(props.initialChecklist_search);
+        let [button, setButton] = React.useState(props.initialButton);
+        let [editMode, setEditMode] = React.useState(props.initialEditMode);
+        let [editItemID, setEditItemID] = React.useState(props.initialEditItemID); // need to create editID state variable to handle item id which be choosen, so can manipulate it in updateChecklist()
+       
+        
+        function UpdateChecklist_search(event){
+            setChecklist_search(event.target.value);
+        }
+        function UpdateChecklist(){
+          
+          if (editMode){
+            let updatedChecklist = checklist.map((item) => item.id == editItemID
+                                                ? {...item, name: checklist_search} //return if equal, with original item with update property name
+                                                : item);  // return if not equal return original item
+            setChecklist(updatedChecklist);
+            setChecklist_search("");
+            setButton("Add");
+            setEditMode(false);
+            setEditItemID(null);
+          }
+          else{
+            let array = [];
+            array = [...checklist];
+            let object = {id: checklist.length + 1, name: checklist_search, delete: "D", edit:"E", status:"unchecked"};
+                                                                                                 //not using {} because creating object don't use JSX expression
+            array.push(object);
+            setChecklist(array);
+            setChecklist_search("");
+          }
+          
+            
+        }  
+        
+        function DeleteRecord(delete_id){
+          let new_array = checklist.filter(item => delete_id != item.id);
+          
+          setChecklist(new_array);
+        }
+        
+        function EditRecord(edit_checklist, edit_id){ //take the item.name and item.id
+
+          setChecklist_search(edit_checklist);
+          setButton("Edit");
+          setEditMode(true);
+          setEditItemID(edit_id);
+         
+        }
+        
+        function StatusFlip(status_id){
+          let new_array = checklist.slice(); // make a copy of checklist array
+          for(let i = 0; i < new_array.length; i++){
+            if(new_array[i].id == status_id){
+              if (new_array[i].status == "unchecked"){
+                new_array[i].status = "checked";
+              }
+              else{
+                new_array[i].status = "unchecked";
+              }
+            }
+          }
+          setChecklist(new_array);
+        }
+
+        let checklist_item = checklist.map((item) => <tr key={item.id}>
+                                                        <td>{item.id}</td>
+                                                        <td>{item.name}</td>
+                                                        <td><button onClick={() => DeleteRecord(item.id)}>{item.delete}</button></td>
+                                                        <td><button onClick={() => EditRecord(item.name,item.id)}>{item.edit}</button></td>
+                                                        <td><span onClick={() => StatusFlip(item.id)}>{item.status}</span></td>
+                                                     </tr>);
+        //console.log(checklist);
+
+        return(  // just return one outermost div (JSX repression)
+            <div> 
+                <div>
+                  <p>StAuth10244: I Tran Khanh Vy Nguyen, 000887268 certify that this material is my original work. No other person's work has been used without due acknowledgement. I have not made my work available to anyone else."</p>
+                </div>
+                <div>
+                  <br/>
+                    <label for="search">Activity:</label> &nbsp;
+                    <input type="text" id="search" value={checklist_search} onChange={UpdateChecklist_search} /> &nbsp;
+                    <button className="submitButton" onClick= {UpdateChecklist}>{button}</button>
+                </div>
+
+                <br/> 
+                <table>
+                    <thead>
+                       <tr><th>ID</th><th>List Name</th><th>Delete Record</th><th>Edit Record</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                       {checklist_item}
+                    </tbody>
+                </table>
+            </div>
+        );
+      }
+
+
+
+
+      function MyApp() {
+        return(
+            <CheckList initialChecklist = {[{id: 1, name:"Daily weight recorded", delete: "D", edit: "E", status:"unchecked"},
+                                                                                                   
+                                            {id: 2, name:"Temparature Check", delete: "D", edit: "E", status:"unchecked"},
+                                                                                                    
+                                            {id: 3, name:"Personal Hygiene", delete:"D", edit: "E", status:"unchecked"} ]}
+                        initialChecklist_search = {""}
+                        initialButton = {"Add"}
+                        initialEditMode = {false}
+                        initialEditItemID = {null}
+                        />
+        );
+      }
+
+      const container = document.getElementById('root');
+      const root = ReactDOM.createRoot(container);
+      root.render(<MyApp />);
+
+    </script>
+    <!--
+      Note: this page is a great way to try React but it's not suitable for production.
+      It slowly compiles JSX with Babel in the browser and uses a large development build of React.
+
+      Read this page for starting a new React project with JSX:
+      https://react.dev/learn/start-a-new-react-project
+
+      Read this page for adding React with JSX to an existing project:
+      https://react.dev/learn/add-react-to-an-existing-project
+    -->
+  </body>
+</html>
